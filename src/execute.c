@@ -1425,7 +1425,13 @@ print_separated_field(uint8_t format,uint8_t quote,uint8_t separator,struct fiel
             case 'D':
             case 'e':
             case 'x':
-                p = &buffer[f->bposition];
+	        p = &buffer[f->bposition];
+		uint8_t *original_p = p;
+		/* Paolo's hack (2011-04-14): when format is D replace p with a copy truncated at field leght */
+		if (format=='D') p = strndup(p, f->length);
+		uint8_t *startpoint = p;
+		/* I know it is a crude hack. Let's check it */
+        
                 if(quote || format == 't') while(*p != separator && isspace(*p)) p++;
                 if(*p == quote && quote) 
                 {
@@ -1462,6 +1468,8 @@ print_separated_field(uint8_t format,uint8_t quote,uint8_t separator,struct fiel
                     write_pos++;
                 }
                 if(format == 'D') while(write_pos - start < f->length) writec(' ');
+		/* freeing allocated memory */
+		if (startpoint!=original_p) free(startpoint);
                 break;
         }
     }
